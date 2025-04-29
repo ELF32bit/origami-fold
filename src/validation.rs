@@ -120,8 +120,8 @@ pub fn validate_vertices_faces_with_edges(frame: &Frame) -> bool {
 						let mut is_vertex_next_edge = false;
 						for index in 0..d2 {
 							let uv = [vertex_face_vertices[index], vertex_face_vertices[(index + 1) % d2]];
-							if edge_equals(vertex_edge, &uv) { is_vertex_edge = true; }
-							if edge_equals(vertex_next_edge, &uv) { is_vertex_next_edge = true; }
+							if !is_vertex_edge && edge_equals(vertex_edge, &uv) { is_vertex_edge = true; }
+							if !is_vertex_next_edge && edge_equals(vertex_next_edge, &uv) { is_vertex_next_edge = true; }
 							if is_vertex_edge && is_vertex_next_edge { break; }
 						}
 						if !(is_vertex_edge && is_vertex_next_edge) { return false; }
