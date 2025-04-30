@@ -1,5 +1,5 @@
-use super::file::File;
-use super::frame::{Frame, EdgeAssignment};
+use super::fold_frame::{FoldFrame, EdgeAssignment};
+use super::fold::Fold;
 
 fn edge_equals(edge: &[usize; 2], uv: &[usize; 2]) -> bool {
 	return (edge[0] == uv[0] && edge[1] == uv[1]) || (edge[0] == uv[1] && edge[1] == uv[0])
@@ -47,7 +47,7 @@ pub fn validate_order_ids<T>(vec: &Vec<(usize, usize, T)>, max_id: usize) -> boo
 	return true;
 }
 
-pub fn validate_vertices_edges_with_vertices(frame: &Frame) -> bool {
+pub fn validate_vertices_edges_with_vertices(frame: &FoldFrame) -> bool {
 	if frame.vertices_vertices.len() == 0 { return true; }
 	if frame.edges_vertices.len() == 0 { return true; }
 
@@ -64,7 +64,7 @@ pub fn validate_vertices_edges_with_vertices(frame: &Frame) -> bool {
 	return true;
 }
 
-pub fn validate_vertices_faces_with_vertices(frame: &Frame) -> bool {
+pub fn validate_vertices_faces_with_vertices(frame: &FoldFrame) -> bool {
 	if !frame.attributes.iter().any(|a| a == "manifold") { return true; }
 	if frame.vertices_vertices.len() == 0 { return true; }
 	if frame.faces_vertices.len() == 0 { return true; }
@@ -90,7 +90,7 @@ pub fn validate_vertices_faces_with_vertices(frame: &Frame) -> bool {
 	return true;
 }
 
-pub fn validate_vertices_faces_with_edges(frame: &Frame) -> bool {
+pub fn validate_vertices_faces_with_edges(frame: &FoldFrame) -> bool {
 	if !frame.attributes.iter().any(|a| a == "manifold") { return true; }
 	if frame.vertices_edges.len() == 0 { return true; }
 	if frame.faces_vertices.len() == 0 { return true; }
@@ -134,7 +134,7 @@ pub fn validate_vertices_faces_with_edges(frame: &Frame) -> bool {
 	return true;
 }
 
-pub fn validate_edges_faces(frame: &Frame) -> bool {
+pub fn validate_edges_faces(frame: &FoldFrame) -> bool {
 	let is_manifold = frame.attributes.iter().any(|a| a == "manifold");
 	for (edge_id, edge_faces) in frame.edges_faces.iter().enumerate() {
 		let mut is_boundary_edge = false;
@@ -157,7 +157,7 @@ pub fn validate_edges_faces(frame: &Frame) -> bool {
 	return true;
 }
 
-pub fn validate_faces_edges_with_vertices(frame: &Frame) -> bool {
+pub fn validate_faces_edges_with_vertices(frame: &FoldFrame) -> bool {
 	if frame.edges_vertices.len() == 0 { return true; }
 	if frame.faces_vertices.len() == 0 { return true; }
 
@@ -175,7 +175,7 @@ pub fn validate_faces_edges_with_vertices(frame: &Frame) -> bool {
 	return true;
 }
 
-pub fn validate_faces_faces_with_edges(frame: &Frame) -> bool {
+pub fn validate_faces_faces_with_edges(frame: &FoldFrame) -> bool {
 	if !frame.attributes.iter().any(|a| a == "manifold") { return true; }
 	if frame.faces_edges.len() == 0 { return true; }
 
@@ -197,15 +197,15 @@ pub fn validate_faces_faces_with_edges(frame: &Frame) -> bool {
 	return true;
 }
 
-pub fn validate_frame_parents(file: &File, frame_id: usize) -> bool {
-	match file.get_frame(frame_id) {
+pub fn validate_frame_parents(fold: &Fold, frame_id: usize) -> bool {
+	match fold.get_frame(frame_id) {
 		Some(frame) => {
 			let mut ids: Vec<usize> = vec![frame_id];
 			let mut current_frame = frame;
 			loop {
 				match current_frame.parent {
 					Some(id) => {
-						match file.get_frame(id) {
+						match fold.get_frame(id) {
 							Some(parent_frame) => {
 								if ids.contains(&id) {
 									return false;

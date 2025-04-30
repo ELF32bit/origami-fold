@@ -1,12 +1,12 @@
 use serde::{Serialize, Deserialize};
 use serde_aux::field_attributes::deserialize_string_from_number;
-use super::frame::Frame;
+use super::fold_frame::FoldFrame;
 
 use super::validation::validate_frame_parents;
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug)]
 #[serde(default)]
-pub struct File {
+pub struct Fold {
 	#[serde(rename = "file_spec")]
 	#[serde(skip_serializing_if = "String::is_empty")]
 	#[serde(deserialize_with = "deserialize_string_from_number")]
@@ -33,14 +33,26 @@ pub struct File {
 	pub classes: Vec<String>,
 
 	#[serde(flatten)]
-	pub key_frame: Frame,
+	pub key_frame: FoldFrame,
 
 	#[serde(rename = "file_frames")]
 	#[serde(skip_serializing_if = "Vec::is_empty")]
-	pub frames: Vec<Frame>,
+	pub frames: Vec<FoldFrame>,
 }
 
-impl File {
+#[derive(Clone, Copy, Serialize, Deserialize, Debug)]
+pub enum FoldClass {
+	#[serde(rename = "singleModel")]
+	SingleModel,
+	#[serde(rename = "multiModel")]
+	MultiModel,
+	#[serde(rename = "animation")]
+	Animation,
+	#[serde(rename = "diagrams")]
+	Diagrams,
+}
+
+impl Fold {
 	pub fn new() -> Self {
 		return Self { ..Default::default() }
 	}
@@ -71,7 +83,7 @@ impl File {
 		}
 	}
 
-	pub fn get_frame(&self, frame_id: usize) -> Option<&Frame> {
+	pub fn get_frame(&self, frame_id: usize) -> Option<&FoldFrame> {
 		let frames_count = self.frames.len() + 1;
 		if !(frame_id < frames_count) {
 			return None;
@@ -82,7 +94,7 @@ impl File {
 		}
 	}
 
-	pub fn get_frame_parent(&self, frame_id: usize) -> Option<&Frame> {
+	pub fn get_frame_parent(&self, frame_id: usize) -> Option<&FoldFrame> {
 		let frame = self.get_frame(frame_id)?;
 		match frame.parent {
 			Some(id) => return self.get_frame(id),
@@ -90,9 +102,9 @@ impl File {
 		}
 	}
 
-	pub fn get_frame_parents(&self, frame_id: usize) -> Option<Vec<&Frame>> {
+	pub fn get_frame_parents(&self, frame_id: usize) -> Option<Vec<&FoldFrame>> {
 		let mut frame = self.get_frame(frame_id)?;
-		let mut frame_parents: Vec<&Frame> = Vec::new();
+		let mut frame_parents: Vec<&FoldFrame> = Vec::new();
 		loop {
 			match frame.parent {
 				Some(id) => {
@@ -106,7 +118,7 @@ impl File {
 		return Some(frame_parents);
 	}
 
-	pub fn get_inherited_frame(&self, frame_id: usize) -> Option<(&Frame, Option<Frame>)> {
+	pub fn get_inherited_frame(&self, frame_id: usize) -> Option<(&FoldFrame, Option<FoldFrame>)> {
 		let mut frame = self.get_frame(frame_id)?;
 		if !frame.inherit || self.get_frame_parent(frame_id).is_none() {
 			return Some((frame, None));

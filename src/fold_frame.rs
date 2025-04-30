@@ -7,7 +7,7 @@ use super::validation::*;
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug)]
 #[serde(default)]
-pub struct Frame {
+pub struct FoldFrame {
 	#[serde(rename = "frame_author")]
 	#[serde(skip_serializing_if = "String::is_empty")]
 	pub author: String,
@@ -94,25 +94,69 @@ pub struct Frame {
 }
 
 #[derive(Clone, Copy, Serialize, Deserialize, Debug)]
+pub enum FoldFrameClass {
+	#[serde(rename = "creasePattern")]
+	CreasePattern,
+	#[serde(rename = "foldedForm")]
+	FoldedForm,
+	#[serde(rename = "graph")]
+	Graph,
+	#[serde(rename = "linkage")]
+	Linkage,
+}
+
+#[derive(Clone, Copy, Serialize, Deserialize, Debug)]
+pub enum FoldFrameAttribute {
+	#[serde(rename = "2D")]
+	TwoDimensional,
+	#[serde(rename = "3D")]
+	ThreeDimensional,
+	#[serde(rename = "abstract")]
+	Abstract,
+	#[serde(rename = "manifold")]
+	Manifold,
+	#[serde(rename = "nonManifold")]
+	NonManifold,
+	#[serde(rename = "orientable")]
+	Orientable,
+	#[serde(rename = "nonOrientable")]
+	NonOrientable,
+	#[serde(rename = "selfTouching")]
+	SelfTouching,
+	#[serde(rename = "nonSelfTouching")]
+	NonSelfTouching,
+	#[serde(rename = "selfIntersecting")]
+	SelfIntersecting,
+	#[serde(rename = "nonSelfIntersecting")]
+	NonSelfIntersecting,
+	#[serde(rename = "cuts")]
+	Cuts,
+	#[serde(rename = "noCuts")]
+	NoCuts,
+	#[serde(rename = "joins")]
+	Joins,
+	#[serde(rename = "noJoins")]
+	NoJoins,
+	#[serde(rename = "convexFaces")]
+	ConvexFaces,
+	#[serde(rename = "nonConvexFaces")]
+	NonConvexFaces,
+}
+
+#[derive(Clone, Copy, Serialize, Deserialize, Debug)]
 pub enum EdgeAssignment {
 	#[serde(rename = "B")]
 	Boundary,
-
 	#[serde(rename = "M")]
 	Mountain,
-
 	#[serde(rename = "V")]
 	Valley,
-
 	#[serde(rename = "F")]
 	Flat,
-
 	#[serde(rename = "U")]
 	Unknown,
-
 	#[serde(rename = "C")]
 	Cut,
-
 	#[serde(rename = "J")]
 	Join,
 }
@@ -148,7 +192,7 @@ fn deserialize_vertices_coordinates<'de, D>(deserializer: D) -> Result<Vec<[f64;
 	return Ok(vertices_coordinates);
 }
 
-impl Frame {
+impl FoldFrame {
 	pub fn new() -> Self {
 		return Self { ..Default::default() }
 	}
