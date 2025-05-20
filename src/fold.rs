@@ -1,8 +1,7 @@
 use serde::{Serialize, Deserialize};
 use serde_aux::field_attributes::deserialize_string_from_number;
-use super::fold_frame::FoldFrame;
-
-use super::validation::validate_frame_parents;
+use super::frame::Frame;
+use super::validation;
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug)]
 #[serde(default)]
@@ -33,11 +32,11 @@ pub struct Fold {
 	pub classes: Vec<String>,
 
 	#[serde(flatten)]
-	pub key_frame: FoldFrame,
+	pub key_frame: Frame,
 
 	#[serde(rename = "file_frames")]
 	#[serde(skip_serializing_if = "Vec::is_empty")]
-	pub frames: Vec<FoldFrame>,
+	pub frames: Vec<Frame>,
 }
 
 #[derive(Clone, Copy, Serialize, Deserialize, Debug)]
@@ -57,77 +56,32 @@ impl Fold {
 		return Self { ..Default::default() }
 	}
 
-	pub fn from_str(s: &str) -> Result<Self, serde_json::Error> {
-		return serde_json::from_str(s);
-	}
-
-	pub fn validate(&self) -> bool {
-		if !self.validate_frame(0) { return false; }
-		for (frame_id, _) in self.frames.iter().enumerate() {
-			if !self.validate_frame(frame_id + 1) { return false; }
-		}
-		return true;
-	}
-
-	pub fn validate_frame(&self, frame_id: usize) -> bool {
-		if !validate_frame_parents(self, frame_id) { return false; }
-		match self.get_inherited_frame(frame_id) {
-			Some((frame, inherited_frame)) => {
-				match inherited_frame {
-					Some(f) => { if !f.validate() { return false; } },
-					None => { if !frame.validate() { return false; } }
-				}
-				return true;
-			},
-			None => return false
-		}
-	}
-
-	pub fn get_frame(&self, frame_id: usize) -> Option<&FoldFrame> {
-		let frames_count = self.frames.len() + 1;
-		if !(frame_id < frames_count) {
-			return None;
-		} else if frame_id == 0 {
+	pub fn get_frame(&self, frame_index: usize) -> Option<&Frame> {
+		if frame_index == 0 {
 			return Some(&self.key_frame);
+		} else if frame_index - 1 < self.frames.len() {
+			return Some(&self.frames[frame_index - 1]);
 		} else {
-			return Some(&self.frames[frame_id - 1]);
+			return None;
 		}
 	}
 
-	pub fn get_frame_parent(&self, frame_id: usize) -> Option<&FoldFrame> {
-		let frame = self.get_frame(frame_id)?;
+	pub fn get_inherited_frame(&self, frame_index: usize) -> Result<Frame, &Frame> {
+		let mut frame = self.get_frame(frame_index).unwrap();
+		if !frame.inherit { return Err(frame); }
+
 		match frame.parent {
-			Some(id) => return self.get_frame(id),
-			None => return None
-		}
-	}
-
-	pub fn get_frame_parents(&self, frame_id: usize) -> Option<Vec<&FoldFrame>> {
-		let mut frame = self.get_frame(frame_id)?;
-		let mut frame_parents: Vec<&FoldFrame> = Vec::new();
-		loop {
-			match frame.parent {
-				Some(id) => {
-					let frame_parent = self.get_frame(id)?;
-					frame_parents.push(frame_parent);
-					frame = frame_parent;
-				},
-				None => break
+			Some(index) => if self.get_frame(index).is_none() {
+				return Err(frame);
 			}
+			None => return Err(frame)
 		}
-		return Some(frame_parents);
-	}
 
-	pub fn get_inherited_frame(&self, frame_id: usize) -> Option<(&FoldFrame, Option<FoldFrame>)> {
-		let mut frame = self.get_frame(frame_id)?;
-		if !frame.inherit || self.get_frame_parent(frame_id).is_none() {
-			return Some((frame, None));
-		}
 		let mut inherited_frame = frame.clone();
 		loop {
 			match frame.parent {
-				Some(id) => {
-					let frame_parent = self.get_frame(id)?;
+				Some(index) => {
+					let frame_parent = self.get_frame(index).unwrap();
 					inherited_frame.inherit_properties(frame_parent);
 					if !frame_parent.inherit { break; }
 					frame = frame_parent;
@@ -135,6 +89,29 @@ impl Fold {
 				None => break
 			}
 		}
-		return Some((frame, Some(inherited_frame)));
+
+		return Ok(inherited_frame);
+	}
+
+	pub fn get_inherited_frames(&self) -> Vec<Result<Frame, &Frame>> {
+		let mut inherited_frames: Vec<Result<Frame, &Frame>> = Vec::new();
+
+		for frame_index in 0..(1 + self.frames.len()) {
+			let inherited_frame = self.get_inherited_frame(frame_index);
+			inherited_frames.push(inherited_frame);
+		}
+
+		return inherited_frames;
+	}
+
+	pub fn validate(&self) -> Result<(), validation::Error> {
+		for frame_index in 0..(1 + self.frames.len()) {
+			validation::validate_frame_parents(self, frame_index)?;
+			match self.get_inherited_frame(frame_index) {
+				Ok(inherited_frame) => inherited_frame.validate()?,
+				Err(frame) => frame.validate()?
+			}
+		}
+		return Ok(());
 	}
 }
