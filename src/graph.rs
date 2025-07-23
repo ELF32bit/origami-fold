@@ -120,8 +120,9 @@ impl Graph {
 
 	pub fn validate(&self) -> Result<(), validation::Error> {
 		validation::validate_vertices_coordinates(self)?;
-		validation::validate_faces_vertices(self)?;
+		validation::validate_edges_length(self)?;
 		validation::validate_edge_orders(self)?;
+		validation::validate_faces_vertices(self)?;
 		validation::validate_face_orders(self)?;
 
 		validation::validate_vertices_vertices_length(self)?;
