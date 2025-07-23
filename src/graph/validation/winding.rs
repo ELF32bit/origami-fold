@@ -1,4 +1,4 @@
-use crate::graph::Graph;
+use crate::fold::Graph;
 use std::collections::HashSet;
 
 #[derive(Clone, Copy, Debug)]

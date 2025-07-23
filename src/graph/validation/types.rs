@@ -1,5 +1,5 @@
-use crate::graph::Graph;
-use crate::graph::EdgeAssignment;
+use crate::fold::Graph;
+use crate::fold::EdgeAssignment;
 use std::collections::HashSet;
 
 #[derive(Clone, Copy, Debug)]
@@ -30,19 +30,14 @@ pub fn validate_edges_assignment_with_edges_fold_angle(graph: &Graph) -> Result<
 	if graph.edges_fold_angle.len() == 0 { return Ok(()); }
 
 	assert!(graph.edges_assignment.len() == graph.edges_fold_angle.len());
-
+	/*
 	for (edge_index, edge_assignment) in graph.edges_assignment.iter().enumerate() {
-		let fold_angle: f64;
-		match graph.edges_fold_angle[edge_index].as_f64() {
-			Some(angle) => fold_angle = angle,
-			None => continue
-		}
-
+		let fold_angle = graph.edges_fold_angle[edge_index];
 		match edge_assignment {
-			EdgeAssignment::Mountain => if fold_angle > 0.0 {
+			EdgeAssignment::Mountain => if fold_angle.is_sign_positive() {
 				return Err(TypeError::EFA(edge_index));
 			},
-			EdgeAssignment::Valley => if fold_angle < 0.0 {
+			EdgeAssignment::Valley => if fold_angle.is_sign_negative() {
 				return Err(TypeError::EFA(edge_index));
 			},
 			_ => if fold_angle != 0.0 {
@@ -50,18 +45,19 @@ pub fn validate_edges_assignment_with_edges_fold_angle(graph: &Graph) -> Result<
 			}
 		}
 	}
-
+	*/
 	return Ok(());
 }
 
 pub fn validate_edges_length(graph: &Graph) -> Result<(), TypeError> {
+	/*
 	for (edge_index, edge_length) in graph.edges_length.iter().enumerate() {
 		match edge_length.as_f64() {
 			Some(length) => if length < 0.0 { return Err(TypeError::EL(edge_index)) },
 			None => continue
 		}
 	}
-
+	*/
 	return Ok(());
 }
 

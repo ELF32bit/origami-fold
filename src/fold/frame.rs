@@ -1,7 +1,8 @@
 use serde::{Serialize, Deserialize};
 use serde_json::{Map, Value};
+
 use super::graph::Graph;
-use super::validation;
+use super::validation::Error;
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug)]
 #[serde(default)]
@@ -146,7 +147,7 @@ impl Frame {
 		}
 	}
 
-	pub fn validate(&self) -> Result<(), validation::Error> {
+	pub fn validate(&self) -> Result<(), Error> {
 		self.graph.validate()?;
 		return Ok(());
 	}

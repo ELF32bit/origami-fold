@@ -1,13 +1,15 @@
 use serde::{Serialize, Deserialize};
-use serde_json::Number;
+
+use crate::real::Real;
 use super::frame::Frame;
-use super::validation;
+use super::validation::Error;
+use super::validation::validate_frame_parents;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(default)]
 pub struct Fold {
 	#[serde(rename = "file_spec")]
-	pub version: Number,
+	pub version: Real,
 
 	#[serde(rename = "file_creator")]
 	#[serde(skip_serializing_if = "String::is_empty")]
@@ -52,7 +54,7 @@ pub enum FoldClass {
 impl Default for Fold {
 	fn default() -> Self {
 		return Self {
-			version: Number::from_f64(1.2).unwrap(),
+			version: Real::from_str("1.2"),
 			creator: Default::default(),
 			author: Default::default(),
 			title: Default::default(),
@@ -117,9 +119,9 @@ impl Fold {
 		return inherited_frames;
 	}
 
-	pub fn validate(&self) -> Result<(), validation::Error> {
+	pub fn validate(&self) -> Result<(), Error> {
 		for frame_index in 0..(1 + self.frames.len()) {
-			validation::validate_frame_parents(self, frame_index)?;
+			validate_frame_parents(self, frame_index)?;
 			match self.get_inherited_frame(frame_index) {
 				Ok(inherited_frame) => inherited_frame.validate()?,
 				Err(frame) => frame.validate()?

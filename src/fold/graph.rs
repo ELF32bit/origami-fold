@@ -1,15 +1,17 @@
 use serde::{Deserialize, Serialize};
 use serde_repr::{Serialize_repr, Deserialize_repr};
-use serde_json::Number;
-use super::validation;
-use super::make;
+
+use crate::real::Real;
+use super::validation::Error;
+use crate::graph::validation;
+use crate::graph::make;
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug)]
 #[serde(default)]
 pub struct Graph {
 	#[serde(rename = "vertices_coords")]
 	#[serde(skip_serializing_if = "Vec::is_empty")]
-	pub vertices_coordinates: Vec<Vec<Number>>,
+	pub vertices_coordinates: Vec<Vec<Real>>,
 
 	#[serde(skip_serializing_if = "Vec::is_empty")]
 	pub vertices_vertices: Vec<Vec<usize>>,
@@ -32,11 +34,11 @@ pub struct Graph {
 	#[serde(rename = "edges_foldAngle")]
 	#[serde(alias = "edges_foldAngles")] // Version 1.0 -> Version 1.1
 	#[serde(skip_serializing_if = "Vec::is_empty")]
-	pub edges_fold_angle: Vec<Number>,
+	pub edges_fold_angle: Vec<Real>,
 
 	#[serde(alias = "edges_lengths")] // Version 1.0 -> Version 1.1
 	#[serde(skip_serializing_if = "Vec::is_empty")]
-	pub edges_length: Vec<Number>,
+	pub edges_length: Vec<Real>,
 
 	#[serde(rename = "edgeOrders")]
 	#[serde(skip_serializing_if = "Vec::is_empty")]
@@ -118,7 +120,7 @@ impl Graph {
 		inherit_property!(self, graph, face_orders);
 	}
 
-	pub fn validate(&self) -> Result<(), validation::Error> {
+	pub fn validate(&self) -> Result<(), Error> {
 		validation::validate_vertices_coordinates(self)?;
 		validation::validate_edges_length(self)?;
 		validation::validate_edge_orders(self)?;
@@ -171,26 +173,4 @@ impl Graph {
 	pub fn make_vertices_edges(&mut self) {
 		self.vertices_edges = make::make_vertices_edges(&self.edges_vertices, &self.vertices_vertices);
 	}
-
-	/*
-	pub fn make_vertices_faces_unsorted(&mut self) {}
-
-	pub fn make_vertices_faces(&mut self) {}
-
-	pub fn make_edges_vertices(&mut self) {}
-
-	pub fn make_edges_faces_unsorted(&mut self) {}
-
-	pub fn make_edges_faces(&mut self) {}
-
-	pub fn make_edges_assignment_simple(&mut self) {}
-
-	pub fn make_edges_assignment(&mut self) {}
-
-	pub fn make_edges_fold_angle_simple(&mut self) {}
-
-	pub fn make_edges_fold_angle(&mut self) {}
-
-	pub fn make_edges_length(&mut self) {}
-	*/
 }

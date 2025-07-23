@@ -1,4 +1,4 @@
-use fold_specification::Fold;
+use fold_specification::fold::Fold;
 
 use std::{fs, path::PathBuf};
 use std::io::BufReader;
@@ -9,6 +9,7 @@ pub fn validate_file(file_str: &str) -> bool {
 	let mut file_reader = BufReader::new(file);
 
 	let fold: Fold = serde_json::from_reader(file_reader).unwrap();
+	println!("{:?}", fold.key_frame.graph.vertices_coordinates);
 	return fold.validate().is_ok();
 }
 

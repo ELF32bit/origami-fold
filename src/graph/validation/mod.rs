@@ -1,53 +1,14 @@
-mod parents;
 mod types;
 mod length;
 mod references;
 mod reflexive;
 mod winding;
 
-use parents::ParentError;
-use types::TypeError;
-use length::LengthError;
-use references::ReferencesError;
-use reflexive::ReflexiveError;
-use winding::WindingError;
-
-#[derive(Clone, Copy, Debug)]
-pub enum Error {
-	ParentError(ParentError),
-	TypeError(TypeError),
-	LengthError(LengthError),
-	ReferencesError(ReferencesError),
-	ReflexiveError(ReflexiveError),
-	WindingError(WindingError),
-}
-
-impl From<ParentError> for Error {
-	fn from(error: ParentError) -> Self { Error::ParentError(error) }
-}
-
-impl From<TypeError> for Error {
-	fn from(error: TypeError) -> Self { Error::TypeError(error) }
-}
-
-
-impl From<LengthError> for Error {
-	fn from(error: LengthError) -> Self { Error::LengthError(error) }
-}
-
-impl From<ReferencesError> for Error {
-	fn from(error: ReferencesError) -> Self { Error::ReferencesError(error) }
-}
-
-impl From<ReflexiveError> for Error {
-	fn from(error: ReflexiveError) -> Self { Error::ReflexiveError(error) }
-}
-
-impl From<WindingError> for Error {
-	fn from(error: WindingError) -> Self { Error::WindingError(error) }
-}
-
-pub use parents::validate_frame_parents;
+pub use types::TypeError;
+pub use length::LengthError;
+pub use references::ReferencesError;
+pub use reflexive::ReflexiveError;
+pub use winding::WindingError;
 
 pub use types::validate_vertices_coordinates;
 pub use types::validate_edges_assignment_with_edges_fold_angle;

@@ -1,4 +1,4 @@
-use crate::graph::Graph;
+use crate::fold::Graph;
 
 #[derive(Clone, Copy, Debug)]
 pub enum LengthError {
