@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 use serde_repr::{Serialize_repr, Deserialize_repr};
 use serde_json::Number;
-
 use super::validation;
+use super::make;
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug)]
 #[serde(default)]
@@ -118,9 +118,11 @@ impl Graph {
 		inherit_property!(self, graph, face_orders);
 	}
 
-	pub fn validate(&self) -> Result<(), validation::GraphError> {
+	pub fn validate(&self) -> Result<(), validation::Error> {
 		validation::validate_vertices_coordinates(self)?;
 		validation::validate_faces_vertices(self)?;
+		validation::validate_edge_orders(self)?;
+		validation::validate_face_orders(self)?;
 
 		validation::validate_vertices_vertices_length(self)?;
 		validation::validate_vertices_edges_length(self)?;
@@ -160,4 +162,34 @@ impl Graph {
 
 		return Ok(());
 	}
+
+	pub fn make_vertices_edges_unsorted(&mut self) {
+		self.vertices_edges = make::make_vertices_edges_unsorted(&self.edges_vertices);
+	}
+
+	pub fn make_vertices_edges(&mut self) {
+		self.vertices_edges = make::make_vertices_edges(&self.edges_vertices, &self.vertices_vertices);
+	}
+
+	/*
+	pub fn make_vertices_faces_unsorted(&mut self) {}
+
+	pub fn make_vertices_faces(&mut self) {}
+
+	pub fn make_edges_vertices(&mut self) {}
+
+	pub fn make_edges_faces_unsorted(&mut self) {}
+
+	pub fn make_edges_faces(&mut self) {}
+
+	pub fn make_edges_assignment_simple(&mut self) {}
+
+	pub fn make_edges_assignment(&mut self) {}
+
+	pub fn make_edges_fold_angle_simple(&mut self) {}
+
+	pub fn make_edges_fold_angle(&mut self) {}
+
+	pub fn make_edges_length(&mut self) {}
+	*/
 }

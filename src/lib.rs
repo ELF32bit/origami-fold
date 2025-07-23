@@ -2,6 +2,7 @@ mod fold;
 mod frame;
 mod graph;
 mod validation;
+mod make;
 
 pub use self::fold::Fold;
 pub use self::fold::FoldClass;
