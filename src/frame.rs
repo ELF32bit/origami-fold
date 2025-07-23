@@ -95,13 +95,29 @@ pub enum FrameAttribute {
 	NonConvexFaces,
 }
 
+#[derive(Clone, Copy, Serialize, Deserialize, Debug)]
+pub enum FrameUnit {
+	#[serde(rename = "unit")]
+	Unit,
+	#[serde(rename = "in")]
+	Inch,
+	#[serde(rename = "pt")]
+	PostScriptPoints,
+	#[serde(rename = "m")]
+	Meters,
+	#[serde(rename = "cm")]
+	Centimeters,
+	#[serde(rename = "mm")]
+	Millimeters,
+	#[serde(rename = "um")]
+	Microns,
+	#[serde(rename = "nm")]
+	Nanometers,
+}
+
 impl Frame {
 	pub fn new() -> Self {
 		return Self { ..Default::default() }
-	}
-
-	pub fn from_str(s: &str) -> Result<Self, serde_json::Error> {
-		return serde_json::from_str(s);
 	}
 
 	pub fn inherit_properties(&mut self, frame: &Self) {

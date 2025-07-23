@@ -1,4 +1,4 @@
-use serde::{de, Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 use serde_repr::{Serialize_repr, Deserialize_repr};
 use serde_json::Number;
 
@@ -9,7 +9,6 @@ use super::validation;
 pub struct Graph {
 	#[serde(rename = "vertices_coords")]
 	#[serde(skip_serializing_if = "Vec::is_empty")]
-	#[serde(deserialize_with = "deserialize_vertices_coordinates")]
 	pub vertices_coordinates: Vec<Vec<Number>>,
 
 	#[serde(skip_serializing_if = "Vec::is_empty")]
@@ -30,15 +29,13 @@ pub struct Graph {
 	#[serde(skip_serializing_if = "Vec::is_empty")]
 	pub edges_assignment: Vec<EdgeAssignment>,
 
-	#[serde(alias = "edges_foldAngles")] // Version 1.0 -> Version 1.1
 	#[serde(rename = "edges_foldAngle")]
-	#[serde(deserialize_with = "deserialize_edges_fold_angle")] // Not specification-compliant!
+	#[serde(alias = "edges_foldAngles")] // Version 1.0 -> Version 1.1
 	#[serde(skip_serializing_if = "Vec::is_empty")]
 	pub edges_fold_angle: Vec<Number>,
 
 	#[serde(alias = "edges_lengths")] // Version 1.0 -> Version 1.1
 	#[serde(skip_serializing_if = "Vec::is_empty")]
-	#[serde(deserialize_with = "deserialize_edges_length")]
 	pub edges_length: Vec<Number>,
 
 	#[serde(rename = "edgeOrders")]
@@ -46,7 +43,6 @@ pub struct Graph {
 	pub edge_orders: Vec<(usize, usize, EdgeOrder)>,
 
 	#[serde(skip_serializing_if = "Vec::is_empty")]
-	#[serde(deserialize_with = "deserialize_faces_vertices")]
 	pub faces_vertices: Vec<Vec<usize>>,
 
 	#[serde(skip_serializing_if = "Vec::is_empty")]
@@ -94,54 +90,6 @@ pub enum FaceOrder {
 	Unknown = 0,
 }
 
-fn deserialize_vertices_coordinates<'de, D>(deserializer: D) -> Result<Vec<Vec<Number>>, D::Error> where D: Deserializer<'de> {
-	let vertices_coordinates = Vec::<Vec<Number>>::deserialize(deserializer)?;
-	let vertices_coordinates_length = vertices_coordinates.len();
-	if vertices_coordinates_length > 0 {
-		let coordinates_length = vertices_coordinates[0].len();
-		for index in 1..vertices_coordinates_length {
-			if vertices_coordinates[index].len() != coordinates_length {
-				return Err(de::Error::custom("TODO: "));
-			}
-		}
-	}
-	return Ok(vertices_coordinates);
-}
-
-fn deserialize_edges_fold_angle<'de, D>(deserializer: D) -> Result<Vec<Number>, D::Error> where D: Deserializer<'de> {
-	let deserialized_edges_fold_angle = Vec::<Option<Number>>::deserialize(deserializer)?;
-	let edges_fold_angle = deserialized_edges_fold_angle.into_iter().map(|fold_angle| {
-		match fold_angle {
-			Some(angle) => return angle,
-			None => return Number::from_f64(0.0).unwrap()
-		}
-	}).collect();
-	return Ok(edges_fold_angle);
-}
-
-fn deserialize_edges_length<'de, D>(deserializer: D) -> Result<Vec<Number>, D::Error> where D: Deserializer<'de> {
-	let edges_length = Vec::<Number>::deserialize(deserializer)?;
-	for edge_length in edges_length.iter() {
-		match edge_length.as_f64() {
-			Some(length) => if length < 0.0 {
-				return Err(de::Error::custom("TODO: "));
-			},
-			None => return Err(de::Error::custom("TODO: "))
-		}
-	}
-	return Ok(edges_length);
-}
-
-fn deserialize_faces_vertices<'de, D>(deserializer: D) -> Result<Vec<Vec<usize>>, D::Error> where D: Deserializer<'de> {
-	let faces_vertices = Vec::<Vec<usize>>::deserialize(deserializer)?;
-	for face_vertices in faces_vertices.iter() {
-		if face_vertices.len() < 3 {
-			return Err(de::Error::custom("TODO: "));
-		}
-	}
-	return Ok(faces_vertices);
-}
-
 impl Graph {
 	pub fn new() -> Self {
 		return Self { ..Default::default() }
@@ -170,7 +118,10 @@ impl Graph {
 		inherit_property!(self, graph, face_orders);
 	}
 
-	pub fn validate(&self) -> Result<(), validation::Error> {
+	pub fn validate(&self) -> Result<(), validation::GraphError> {
+		validation::validate_vertices_coordinates(self)?;
+		validation::validate_faces_vertices(self)?;
+
 		validation::validate_vertices_vertices_length(self)?;
 		validation::validate_vertices_edges_length(self)?;
 		validation::validate_vertices_faces_length(self)?;

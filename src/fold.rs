@@ -1,15 +1,13 @@
 use serde::{Serialize, Deserialize};
-use serde_aux::field_attributes::deserialize_string_from_number;
+use serde_json::Number;
 use super::frame::Frame;
 use super::validation;
 
-#[derive(Default, Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(default)]
 pub struct Fold {
 	#[serde(rename = "file_spec")]
-	#[serde(skip_serializing_if = "String::is_empty")]
-	#[serde(deserialize_with = "deserialize_string_from_number")]
-	pub version: String,
+	pub version: Number,
 
 	#[serde(rename = "file_creator")]
 	#[serde(skip_serializing_if = "String::is_empty")]
@@ -49,6 +47,21 @@ pub enum FoldClass {
 	Animation,
 	#[serde(rename = "diagrams")]
 	Diagrams,
+}
+
+impl Default for Fold {
+	fn default() -> Self {
+		return Self {
+			version: Number::from_f64(1.2).unwrap(),
+			creator: Default::default(),
+			author: Default::default(),
+			title: Default::default(),
+			description: Default::default(),
+			classes: Default::default(),
+			key_frame: Default::default(),
+			frames: Default::default(),
+		}
+	}
 }
 
 impl Fold {
