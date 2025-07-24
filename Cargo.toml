@@ -11,5 +11,6 @@ serde_repr = "0.1.20"
 rug = { version = "1.27.0", optional = true }
 
 [features]
-default = ["arbitrary_precision"]
-arbitrary_precision = ["dep:rug"]
+default = ["real_is_rug"]
+real_is_rug = ["dep:rug"]
+real_is_f32 = []

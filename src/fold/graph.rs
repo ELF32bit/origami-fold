@@ -152,6 +152,7 @@ impl Graph {
 		validation::validate_vertices_edges_with_edges_vertices(self)?;
 		validation::validate_vertices_faces_with_faces_vertices(self)?;
 		validation::validate_edges_faces_with_faces_edges(self)?;
+		validation::validate_edges_assignment_with_edges_fold_angle(self)?;
 		validation::validate_faces_faces_with_faces_faces(self)?;
 
 		validation::validate_vertices_vertices_and_vertices_edges_winding(self)?;
@@ -160,8 +161,6 @@ impl Graph {
 		validation::validate_faces_vertices_and_faces_edges_winding(self)?;
 		validation::validate_faces_vertices_and_faces_faces_winding(self)?;
 		validation::validate_faces_edges_and_faces_faces_winding(self)?;
-
-		validation::validate_edges_assignment_with_edges_fold_angle(self)?;
 
 		return Ok(());
 	}

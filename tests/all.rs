@@ -9,7 +9,9 @@ pub fn validate_file(file_str: &str) -> bool {
 	let mut file_reader = BufReader::new(file);
 
 	let fold: Fold = serde_json::from_reader(file_reader).unwrap();
-	println!("{:?}", fold.key_frame.graph.vertices_coordinates);
+	//println!("{:?}", fold.key_frame.graph.vertices_coordinates);
+	//println!("{:?}", serde_json::to_string(&fold));
+	println!("{:?}", fold.validate());
 	return fold.validate().is_ok();
 }
 

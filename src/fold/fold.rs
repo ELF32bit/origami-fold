@@ -1,6 +1,5 @@
 use serde::{Serialize, Deserialize};
 
-use crate::real::Real;
 use super::frame::Frame;
 use super::validation::Error;
 use super::validation::validate_frame_parents;
@@ -9,7 +8,7 @@ use super::validation::validate_frame_parents;
 #[serde(default)]
 pub struct Fold {
 	#[serde(rename = "file_spec")]
-	pub version: Real,
+	pub version: f64,
 
 	#[serde(rename = "file_creator")]
 	#[serde(skip_serializing_if = "String::is_empty")]
@@ -54,8 +53,8 @@ pub enum FoldClass {
 impl Default for Fold {
 	fn default() -> Self {
 		return Self {
-			version: Real::from_str("1.2"),
-			creator: Default::default(),
+			version: 1.2,
+			creator: String::from("LibFOLD"),
 			author: Default::default(),
 			title: Default::default(),
 			description: Default::default(),

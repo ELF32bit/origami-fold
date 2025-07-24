@@ -9,6 +9,7 @@ pub use fold::FoldClass;
 pub use frame::Frame;
 pub use frame::FrameClass;
 pub use frame::FrameAttribute;
+pub use frame::FrameUnit;
 
 pub use graph::Graph;
 pub use graph::EdgeAssignment;

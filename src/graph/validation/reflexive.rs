@@ -1,12 +1,14 @@
 use crate::fold::Graph;
 use std::collections::{HashMap, HashSet};
+use crate::fold::EdgeAssignment;
 
 #[derive(Clone, Copy, Debug)]
 pub enum ReflexiveError {
 	VV,
-	VE,
-	VF,
-	EF,
+	VEEV,
+	VFFV,
+	EFFE,
+	EFA(usize),
 	FF,
 }
 
@@ -21,6 +23,7 @@ pub fn validate_vertices_vertices_with_vertices_vertices(graph: &Graph) -> Resul
 		}
 		hash_map.insert(vertex_index, hash_set);
 	}
+
 	for (vertex_index, vertex_vertices) in graph.vertices_vertices.iter().enumerate() {
 		for vertex_vertex_index in vertex_vertices.iter() {
 			match hash_map.get(vertex_vertex_index) {
@@ -47,13 +50,14 @@ pub fn validate_vertices_edges_with_edges_vertices(graph: &Graph) -> Result<(), 
 		}
 		hash_map.insert(vertex_index, hash_set);
 	}
+
 	for (edge_index, edge_vertices) in graph.edges_vertices.iter().enumerate() {
 		for edge_vertex_index in [edge_vertices.0, edge_vertices.1].iter() {
 			match hash_map.get(edge_vertex_index) {
 				Some(hash_set) => if !hash_set.contains(&edge_index) {
-					return Err(ReflexiveError::VE)
+					return Err(ReflexiveError::VEEV)
 				},
-				None => return Err(ReflexiveError::VE)
+				None => return Err(ReflexiveError::VEEV)
 			}
 		}
 	}
@@ -62,7 +66,7 @@ pub fn validate_vertices_edges_with_edges_vertices(graph: &Graph) -> Result<(), 
 		for &vertex_edge_index in vertex_edges.iter() {
 			let vertex_edge = graph.edges_vertices[vertex_edge_index];
 			if vertex_edge.0 != vertex_index && vertex_edge.1 != vertex_index {
-				return Err(ReflexiveError::VE)
+				return Err(ReflexiveError::VEEV)
 			}
 		}
 	}
@@ -87,13 +91,14 @@ pub fn validate_vertices_faces_with_faces_vertices(graph: &Graph) -> Result<(), 
 		}
 		hash_map12.insert(vertex_index, hash_set);
 	}
+
 	for (face_index, face_vertices) in graph.faces_vertices.iter().enumerate() {
 		for face_vertex_index in face_vertices.iter() {
 			match hash_map12.get(face_vertex_index) {
 				Some(hash_set) => if !hash_set.contains(&face_index) {
-					return Err(ReflexiveError::VF)
+					return Err(ReflexiveError::VFFV)
 				},
-				None => return Err(ReflexiveError::VF)
+				None => return Err(ReflexiveError::VFFV)
 			}
 		}
 	}
@@ -106,15 +111,16 @@ pub fn validate_vertices_faces_with_faces_vertices(graph: &Graph) -> Result<(), 
 		}
 		hash_map21.insert(face_index, hash_set);
 	}
+
 	for (vertex_index, vertex_faces) in graph.vertices_faces.iter().enumerate() {
 		for vertex_face_option in vertex_faces.iter() {
 			match vertex_face_option {
 				Some(vertex_face_index) => {
 					match hash_map21.get(vertex_face_index) {
 						Some(hash_set) => if !hash_set.contains(&vertex_index) {
-							return Err(ReflexiveError::VF)
+							return Err(ReflexiveError::VFFV)
 						},
-						None => return Err(ReflexiveError::VF)
+						None => return Err(ReflexiveError::VFFV)
 					}
 				},
 				None => continue
@@ -142,13 +148,14 @@ pub fn validate_edges_faces_with_faces_edges(graph: &Graph) -> Result<(), Reflex
 		}
 		hash_map12.insert(edge_index, hash_set);
 	}
+
 	for (face_index, face_edges) in graph.faces_edges.iter().enumerate() {
 		for face_edge_index in face_edges.iter() {
 			match hash_map12.get(face_edge_index) {
 				Some(hash_set) => if !hash_set.contains(&face_index) {
-					return Err(ReflexiveError::EF)
+					return Err(ReflexiveError::EFFE)
 				},
-				None => return Err(ReflexiveError::EF)
+				None => return Err(ReflexiveError::EFFE)
 			}
 		}
 	}
@@ -161,18 +168,43 @@ pub fn validate_edges_faces_with_faces_edges(graph: &Graph) -> Result<(), Reflex
 		}
 		hash_map21.insert(face_index, hash_set);
 	}
+
 	for (edge_index, edge_faces) in graph.edges_faces.iter().enumerate() {
 		for edge_face_option in edge_faces.iter() {
 			match edge_face_option {
 				Some(edge_face_index) => {
 					match hash_map21.get(edge_face_index) {
 						Some(hash_set) => if !hash_set.contains(&edge_index) {
-							return Err(ReflexiveError::EF)
+							return Err(ReflexiveError::EFFE)
 						},
-						None => return Err(ReflexiveError::EF)
+						None => return Err(ReflexiveError::EFFE)
 					}
 				},
 				None => continue
+			}
+		}
+	}
+
+	return Ok(());
+}
+
+pub fn validate_edges_assignment_with_edges_fold_angle(graph: &Graph) -> Result<(), ReflexiveError> {
+	if graph.edges_assignment.len() == 0 { return Ok(()); }
+	if graph.edges_fold_angle.len() == 0 { return Ok(()); }
+
+	assert!(graph.edges_assignment.len() == graph.edges_fold_angle.len());
+
+	for (edge_index, edge_assignment) in graph.edges_assignment.iter().enumerate() {
+		let fold_angle = &graph.edges_fold_angle[edge_index];
+		match edge_assignment {
+			EdgeAssignment::Mountain => if *fold_angle > 0.0 {
+				return Err(ReflexiveError::EFA(edge_index));
+			},
+			EdgeAssignment::Valley => if *fold_angle < 0.0 {
+				return Err(ReflexiveError::EFA(edge_index));
+			},
+			_ => if *fold_angle != 0.0 {
+				return Err(ReflexiveError::EFA(edge_index));
 			}
 		}
 	}
@@ -196,6 +228,7 @@ pub fn validate_faces_faces_with_faces_faces(graph: &Graph) -> Result<(), Reflex
 		}
 		hash_map.insert(face_index, hash_set);
 	}
+
 	for (face_index, face_faces) in graph.faces_faces.iter().enumerate() {
 		for face_face_option in face_faces.iter() {
 			match face_face_option {
