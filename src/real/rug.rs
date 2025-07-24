@@ -51,7 +51,7 @@ impl PartialOrd<f64> for Real {
 
 	fn le(&self, other: &f64) -> bool {
 		return Float::le(&self.0, other);
-    }
+	}
 
 	fn gt(&self, other: &f64) -> bool {
 		return Float::gt(&self.0, other);
