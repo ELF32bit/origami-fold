@@ -4,36 +4,80 @@ use crate::fold::EdgeAssignment;
 
 #[derive(Clone, Copy, Debug)]
 pub enum ReflexiveError {
-	VV,
-	VEEV,
-	VFFV,
-	EFFE,
+	VV(usize, usize),
+	VEEV(usize, usize),
+	EVVE(usize, usize),
+	FVVF(usize, usize),
+	VFFV(usize, usize),
+	FEEF(usize, usize),
+	EFFE(usize, usize),
 	EFA(usize),
-	FF,
+	FF(usize, usize),
+}
+
+fn map(vec: &Vec<Vec<usize>>) -> HashMap<usize, HashSet<usize>> {
+	let mut map: HashMap<usize, HashSet<usize>> = HashMap::new();
+	for (vec_index, vec_vec) in vec.iter().enumerate() {
+		let mut set = HashSet::<usize>::new();
+		for &vec_vec_index in vec_vec.iter() {
+			set.insert(vec_vec_index);
+		}
+		map.insert(vec_index, set);
+	}
+	return map;
+}
+
+fn map_with_null(vec: &Vec<Vec<Option<usize>>>) -> HashMap<usize, HashSet<usize>> {
+	let mut map: HashMap<usize, HashSet<usize>> = HashMap::new();
+	for (vec_index, vec_vec) in vec.iter().enumerate() {
+		let mut set = HashSet::<usize>::new();
+		for &vec_vec_option in vec_vec.iter() {
+			if vec_vec_option.is_none() { continue; }
+			let vec_vec_index = vec_vec_option.unwrap();
+			set.insert(vec_vec_index);
+		}
+		map.insert(vec_index, set);
+	}
+	return map;
+}
+
+macro_rules! validate {
+	($map: ident, $rvec: expr, $error: ident) => {
+		for (rvec_index, rvec_vec) in $rvec.iter().enumerate() {
+			for &rvec_vec_index in rvec_vec.iter() {
+				match $map.get(&rvec_vec_index) {
+					Some(set) => if !set.contains(&rvec_index) {
+						return Err(ReflexiveError::$error(rvec_index, rvec_vec_index));
+					}
+					None => return Err(ReflexiveError::$error(rvec_index, rvec_vec_index))
+				}
+			}
+		}
+	};
+}
+
+macro_rules! validate_with_null {
+	($map: ident, $rvec: expr, $error: ident) => {
+		for (rvec_index, rvec_vec) in $rvec.iter().enumerate() {
+			for &rvec_vec_option in rvec_vec.iter() {
+				if rvec_vec_option.is_none() { continue; }
+				let rvec_vec_index = rvec_vec_option.unwrap();
+				match $map.get(&rvec_vec_index) {
+					Some(set) => if !set.contains(&rvec_index) {
+						return Err(ReflexiveError::$error(rvec_index, rvec_vec_index));
+					}
+					None => return Err(ReflexiveError::$error(rvec_index, rvec_vec_index))
+				}
+			}
+		}
+	};
 }
 
 pub fn validate_vertices_vertices_with_vertices_vertices(graph: &Graph) -> Result<(), ReflexiveError> {
 	if graph.vertices_vertices.len() == 0 { return Ok(()); }
 
-	let mut hash_map: HashMap<usize, HashSet<usize>> = HashMap::new();
-	for (vertex_index, vertex_vertices) in graph.vertices_vertices.iter().enumerate() {
-		let mut hash_set = HashSet::<usize>::new();
-		for &vertex_vertex_index in vertex_vertices.iter() {
-			hash_set.insert(vertex_vertex_index);
-		}
-		hash_map.insert(vertex_index, hash_set);
-	}
-
-	for (vertex_index, vertex_vertices) in graph.vertices_vertices.iter().enumerate() {
-		for vertex_vertex_index in vertex_vertices.iter() {
-			match hash_map.get(vertex_vertex_index) {
-				Some(hash_set) => if !hash_set.contains(&vertex_index) {
-					return Err(ReflexiveError::VV)
-				},
-				None => return Err(ReflexiveError::VV)
-			}
-		}
-	}
+	let vertices_vertices_map = map(&graph.vertices_vertices);
+	validate!(vertices_vertices_map, graph.vertices_vertices, VV);
 
 	return Ok(());
 }
@@ -41,36 +85,13 @@ pub fn validate_vertices_vertices_with_vertices_vertices(graph: &Graph) -> Resul
 pub fn validate_vertices_edges_with_edges_vertices(graph: &Graph) -> Result<(), ReflexiveError> {
 	if graph.vertices_edges.len() == 0 { return Ok(()); }
 	if graph.edges_vertices.len() == 0 { return Ok(()); }
+	/*
+	let edges_vertices_map = map(&graph.edges_vertices);
+	validate!(edges_vertices_map, graph.vertices_edges, VEEV);
 
-	let mut hash_map: HashMap<usize, HashSet<usize>> = HashMap::new();
-	for (vertex_index, vertex_edges) in graph.vertices_edges.iter().enumerate() {
-		let mut hash_set = HashSet::<usize>::new();
-		for &vertex_edge_index in vertex_edges.iter() {
-			hash_set.insert(vertex_edge_index);
-		}
-		hash_map.insert(vertex_index, hash_set);
-	}
-
-	for (edge_index, edge_vertices) in graph.edges_vertices.iter().enumerate() {
-		for edge_vertex_index in [edge_vertices.0, edge_vertices.1].iter() {
-			match hash_map.get(edge_vertex_index) {
-				Some(hash_set) => if !hash_set.contains(&edge_index) {
-					return Err(ReflexiveError::VEEV)
-				},
-				None => return Err(ReflexiveError::VEEV)
-			}
-		}
-	}
-
-	for (vertex_index, vertex_edges) in graph.vertices_edges.iter().enumerate() {
-		for &vertex_edge_index in vertex_edges.iter() {
-			let vertex_edge = graph.edges_vertices[vertex_edge_index];
-			if vertex_edge.0 != vertex_index && vertex_edge.1 != vertex_index {
-				return Err(ReflexiveError::VEEV)
-			}
-		}
-	}
-
+	let vertices_edges_map = map(&graph.vertices_edges);
+	validate!(vertices_edges_map, graph.edges_vertices, EVVE);
+	*/
 	return Ok(());
 }
 
@@ -78,55 +99,11 @@ pub fn validate_vertices_faces_with_faces_vertices(graph: &Graph) -> Result<(), 
 	if graph.vertices_faces.len() == 0 { return Ok(()); }
 	if graph.faces_vertices.len() == 0 { return Ok(()); }
 
-	let mut hash_map12: HashMap<usize, HashSet<usize>> = HashMap::new();
-	for (vertex_index, vertex_faces) in graph.vertices_faces.iter().enumerate() {
-		let mut hash_set = HashSet::<usize>::new();
-		for &vertex_face_option in vertex_faces.iter() {
-			match vertex_face_option {
-				Some(vertex_face_index) => {
-					hash_set.insert(vertex_face_index);
-				},
-				None => continue
-			}
-		}
-		hash_map12.insert(vertex_index, hash_set);
-	}
+	let faces_vertices_map = map(&graph.faces_vertices);
+	validate_with_null!(faces_vertices_map, graph.vertices_faces, VFFV);
 
-	for (face_index, face_vertices) in graph.faces_vertices.iter().enumerate() {
-		for face_vertex_index in face_vertices.iter() {
-			match hash_map12.get(face_vertex_index) {
-				Some(hash_set) => if !hash_set.contains(&face_index) {
-					return Err(ReflexiveError::VFFV)
-				},
-				None => return Err(ReflexiveError::VFFV)
-			}
-		}
-	}
-
-	let mut hash_map21: HashMap<usize, HashSet<usize>> = HashMap::new();
-	for (face_index, face_vertices) in graph.faces_vertices.iter().enumerate() {
-		let mut hash_set = HashSet::<usize>::new();
-		for &face_vertex_index in face_vertices.iter() {
-			hash_set.insert(face_vertex_index);
-		}
-		hash_map21.insert(face_index, hash_set);
-	}
-
-	for (vertex_index, vertex_faces) in graph.vertices_faces.iter().enumerate() {
-		for vertex_face_option in vertex_faces.iter() {
-			match vertex_face_option {
-				Some(vertex_face_index) => {
-					match hash_map21.get(vertex_face_index) {
-						Some(hash_set) => if !hash_set.contains(&vertex_index) {
-							return Err(ReflexiveError::VFFV)
-						},
-						None => return Err(ReflexiveError::VFFV)
-					}
-				},
-				None => continue
-			}
-		}
-	}
+	let vertices_faces_map = map_with_null(&graph.vertices_faces);
+	validate!(vertices_faces_map, graph.faces_vertices, FVVF);
 
 	return Ok(());
 }
@@ -135,55 +112,11 @@ pub fn validate_edges_faces_with_faces_edges(graph: &Graph) -> Result<(), Reflex
 	if graph.edges_faces.len() == 0 { return Ok(()); }
 	if graph.faces_edges.len() == 0 { return Ok(()); }
 
-	let mut hash_map12: HashMap<usize, HashSet<usize>> = HashMap::new();
-	for (edge_index, edge_faces) in graph.edges_faces.iter().enumerate() {
-		let mut hash_set = HashSet::<usize>::new();
-		for &edge_face_option in edge_faces.iter() {
-			match edge_face_option {
-				Some(edge_face_index) => {
-					hash_set.insert(edge_face_index);
-				},
-				None => continue
-			}
-		}
-		hash_map12.insert(edge_index, hash_set);
-	}
+	let faces_edges_map = map(&graph.faces_edges);
+	validate_with_null!(faces_edges_map, graph.edges_faces, EFFE);
 
-	for (face_index, face_edges) in graph.faces_edges.iter().enumerate() {
-		for face_edge_index in face_edges.iter() {
-			match hash_map12.get(face_edge_index) {
-				Some(hash_set) => if !hash_set.contains(&face_index) {
-					return Err(ReflexiveError::EFFE)
-				},
-				None => return Err(ReflexiveError::EFFE)
-			}
-		}
-	}
-
-	let mut hash_map21: HashMap<usize, HashSet<usize>> = HashMap::new();
-	for (face_index, face_edges) in graph.faces_edges.iter().enumerate() {
-		let mut hash_set = HashSet::<usize>::new();
-		for &face_edge_index in face_edges.iter() {
-			hash_set.insert(face_edge_index);
-		}
-		hash_map21.insert(face_index, hash_set);
-	}
-
-	for (edge_index, edge_faces) in graph.edges_faces.iter().enumerate() {
-		for edge_face_option in edge_faces.iter() {
-			match edge_face_option {
-				Some(edge_face_index) => {
-					match hash_map21.get(edge_face_index) {
-						Some(hash_set) => if !hash_set.contains(&edge_index) {
-							return Err(ReflexiveError::EFFE)
-						},
-						None => return Err(ReflexiveError::EFFE)
-					}
-				},
-				None => continue
-			}
-		}
-	}
+	let edges_faces_map = map_with_null(&graph.edges_faces);
+	validate!(edges_faces_map, graph.faces_edges, FEEF);
 
 	return Ok(());
 }
@@ -215,35 +148,8 @@ pub fn validate_edges_assignment_with_edges_fold_angle(graph: &Graph) -> Result<
 pub fn validate_faces_faces_with_faces_faces(graph: &Graph) -> Result<(), ReflexiveError> {
 	if graph.faces_faces.len() == 0 { return Ok(()); }
 
-	let mut hash_map: HashMap<usize, HashSet<usize>> = HashMap::new();
-	for (face_index, face_faces) in graph.faces_faces.iter().enumerate() {
-		let mut hash_set = HashSet::<usize>::new();
-		for &face_face_option in face_faces.iter() {
-			match face_face_option {
-				Some(face_face_index) => {
-					hash_set.insert(face_face_index);
-				},
-				None => continue
-			}
-		}
-		hash_map.insert(face_index, hash_set);
-	}
-
-	for (face_index, face_faces) in graph.faces_faces.iter().enumerate() {
-		for face_face_option in face_faces.iter() {
-			match face_face_option {
-				Some(face_face_index) => {
-					match hash_map.get(face_face_index) {
-						Some(hash_set) => if !hash_set.contains(&face_index) {
-							return Err(ReflexiveError::FF)
-						},
-						None => return Err(ReflexiveError::FF)
-					}
-				},
-				None => continue
-			}
-		}
-	}
+	let faces_faces_map = map_with_null(&graph.faces_faces);
+	validate_with_null!(faces_faces_map, graph.faces_faces, FF);
 
 	return Ok(());
 }

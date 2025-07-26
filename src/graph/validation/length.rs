@@ -13,74 +13,25 @@ pub enum LengthError {
 	FF,
 }
 
-pub fn validate_vertices_vertices_length(graph: &Graph) -> Result<(), LengthError> {
-	let length = graph.vertices_vertices.len();
-	if !(length == 0 || length == graph.vertices_coordinates.len()) {
-		return Err(LengthError::VV);
-	}
-	return Ok(());
+macro_rules! validate {
+	($method: ident, $source: ident, $destination: ident, $error: ident) => {
+		pub fn $method(graph: &Graph) -> Result<(), LengthError> {
+			let l1 = graph.$source.len();
+			let l2 = graph.$destination.len();
+			if !(l1 == 0 || l1 == l2) { return Err(LengthError::$error) }
+			return Ok(());
+		}
+	};
 }
 
-pub fn validate_vertices_edges_length(graph: &Graph) -> Result<(), LengthError> {
-	let length = graph.vertices_edges.len();
-	if !(length == 0 || length == graph.vertices_coordinates.len()) {
-		return Err(LengthError::VE);
-	}
-	return Ok(());
-}
+validate!(validate_vertices_vertices_length,vertices_vertices, vertices_coordinates, VV);
+validate!(validate_vertices_edges_length, vertices_edges, vertices_coordinates, VE);
+validate!(validate_vertices_faces_length, vertices_faces, vertices_coordinates, VF);
 
-pub fn validate_vertices_faces_length(graph: &Graph) -> Result<(), LengthError> {
-	let length = graph.vertices_faces.len();
-	if !(length == 0 || length == graph.vertices_coordinates.len()) {
-		return Err(LengthError::VF);
-	}
-	return Ok(());
-}
+validate!(validate_edges_faces_length, edges_faces, edges_vertices, EF);
+validate!(validate_edges_assignment_length, edges_assignment, edges_vertices, EA);
+validate!(validate_edges_fold_angle_length, edges_fold_angle, edges_vertices, EFA);
+validate!(validate_edges_length_length, edges_length, edges_vertices, EL);
 
-pub fn validate_edges_faces_length(graph: &Graph) -> Result<(), LengthError> {
-	let length = graph.edges_faces.len();
-	if !(length == 0 || length == graph.edges_vertices.len()) {
-		return Err(LengthError::EF);
-	}
-	return Ok(());
-}
-
-pub fn validate_edges_assignment_length(graph: &Graph) -> Result<(), LengthError> {
-	let length = graph.edges_assignment.len();
-	if !(length == 0 || length == graph.edges_vertices.len()) {
-		return Err(LengthError::EA);
-	}
-	return Ok(());
-}
-
-pub fn validate_edges_fold_angle_length(graph: &Graph) -> Result<(), LengthError> {
-	let length = graph.edges_fold_angle.len();
-	if !(length == 0 || length == graph.edges_vertices.len()) {
-		return Err(LengthError::EFA);
-	}
-	return Ok(());
-}
-
-pub fn validate_edges_length_length(graph: &Graph) -> Result<(), LengthError> {
-	let length = graph.edges_length.len();
-	if !(length == 0 || length == graph.edges_vertices.len()) {
-		return Err(LengthError::EL);
-	}
-	return Ok(());
-}
-
-pub fn validate_faces_edges_length(graph: &Graph) -> Result<(), LengthError> {
-	let length = graph.faces_edges.len();
-	if !(length == 0 || length == graph.faces_vertices.len()) {
-		return Err(LengthError::FE);
-	}
-	return Ok(());
-}
-
-pub fn validate_faces_faces_length(graph: &Graph) -> Result<(), LengthError> {
-	let length = graph.faces_faces.len();
-	if !(length == 0 || length == graph.faces_vertices.len()) {
-		return Err(LengthError::FF);
-	}
-	return Ok(());
-}
+validate!(validate_faces_edges_length, faces_edges, faces_vertices, FE);
+validate!(validate_faces_faces_length, faces_faces, faces_vertices, FF);

@@ -11,15 +11,3 @@ pub fn make_cyclical_pairs_map(vec: &Vec<Vec<usize>>) -> HashMap<(usize, usize),
 	}
 	return pairs_map;
 }
-
-pub fn make_cyclical_pairs_map2(vec: &Vec<(usize, usize)>)  -> HashMap<(usize, usize), usize> {
-	let mut pairs_map: HashMap<(usize, usize), usize> = HashMap::new();
-	for (vec_index, inner_vec_tuple) in vec.iter().enumerate() {
-		let inner_vec = [inner_vec_tuple.0, inner_vec_tuple.1];
-		for (index, &inner_vec_index) in inner_vec.iter().enumerate() {
-			let pair = (inner_vec_index, inner_vec[(index + 1) % 2]);
-			pairs_map.insert(pair, vec_index);
-		}
-	}
-	return pairs_map;
-}

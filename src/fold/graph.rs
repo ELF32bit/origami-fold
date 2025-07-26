@@ -2,6 +2,8 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Serialize_repr, Deserialize_repr};
 
 use crate::real::Real;
+use super::edge::Edge;
+use super::edge::EdgeAssignment;
 use super::validation::Error;
 use crate::graph::validation;
 use crate::graph::make;
@@ -23,7 +25,7 @@ pub struct Graph {
 	pub vertices_faces: Vec<Vec<Option<usize>>>,
 
 	#[serde(skip_serializing_if = "Vec::is_empty")]
-	pub edges_vertices: Vec<(usize, usize)>,
+	pub edges_vertices: Vec<Edge>,
 
 	#[serde(skip_serializing_if = "Vec::is_empty")]
 	pub edges_faces: Vec<Vec<Option<usize>>>,
@@ -56,24 +58,6 @@ pub struct Graph {
 	#[serde(rename = "faceOrders")]
 	#[serde(skip_serializing_if = "Vec::is_empty")]
 	pub face_orders: Vec<(usize, usize, FaceOrder)>,
-}
-
-#[derive(Clone, Copy, Serialize, Deserialize, Debug)]
-pub enum EdgeAssignment {
-	#[serde(rename = "B")]
-	Boundary,
-	#[serde(rename = "M")]
-	Mountain,
-	#[serde(rename = "V")]
-	Valley,
-	#[serde(rename = "F")]
-	Flat,
-	#[serde(rename = "U")]
-	Unknown,
-	#[serde(rename = "C")]
-	Cut,
-	#[serde(rename = "J")]
-	Join,
 }
 
 #[derive(Clone, Copy, Serialize_repr, Deserialize_repr, Debug)]
