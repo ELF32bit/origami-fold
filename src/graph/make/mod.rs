@@ -2,7 +2,7 @@ mod pairs;
 
 //mod vertices;
 //mod vertices_vertices;
-mod vertices_edges;
+//mod vertices_edges;
 //mod vertices_faces;
 
 //mod edges;
@@ -15,6 +15,3 @@ mod vertices_edges;
 //mod faces_vertices;
 //mod faces_edges;
 //mod faces_faces;
-
-pub use vertices_edges::make_vertices_edges_unsorted;
-pub use vertices_edges::make_vertices_edges;

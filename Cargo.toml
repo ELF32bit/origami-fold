@@ -1,6 +1,6 @@
 [package]
-name = "fold_specification"
-version = "1.2.0"
+name = "fold"
+version = "1.0.0"
 edition = "2024"
 
 [dependencies]
@@ -13,4 +13,3 @@ rug = { version = "1.27.0", optional = true }
 [features]
 default = ["real_is_rug"]
 real_is_rug = ["dep:rug"]
-real_is_f32 = []

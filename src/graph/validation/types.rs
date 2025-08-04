@@ -4,6 +4,7 @@ use std::collections::HashSet;
 #[derive(Clone, Copy, Debug)]
 pub enum TypeError {
 	VC(usize, usize),
+	EV(usize),
 	EL(usize),
 	EO(usize),
 	FV(usize),
@@ -16,6 +17,15 @@ pub fn validate_vertices_coordinates(graph: &Graph) -> Result<(), TypeError> {
 	for (vertex_index, vertex_coordinates) in graph.vertices_coordinates.iter().enumerate() {
 		if vertex_coordinates.len() != expected_coordinates_length {
 			return Err(TypeError::VC(vertex_index, expected_coordinates_length));
+		}
+	}
+	return Ok(());
+}
+
+pub fn validate_edges_vertices(graph: &Graph) -> Result<(), TypeError> {
+	for (edge_index, edge_vertices) in graph.edges_vertices.iter().enumerate() {
+		if edge_vertices.len() != 2 {
+			return Err(TypeError::FV(edge_index));
 		}
 	}
 	return Ok(());

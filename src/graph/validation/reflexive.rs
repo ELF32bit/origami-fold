@@ -85,13 +85,13 @@ pub fn validate_vertices_vertices_with_vertices_vertices(graph: &Graph) -> Resul
 pub fn validate_vertices_edges_with_edges_vertices(graph: &Graph) -> Result<(), ReflexiveError> {
 	if graph.vertices_edges.len() == 0 { return Ok(()); }
 	if graph.edges_vertices.len() == 0 { return Ok(()); }
-	/*
+
 	let edges_vertices_map = map(&graph.edges_vertices);
 	validate!(edges_vertices_map, graph.vertices_edges, VEEV);
 
 	let vertices_edges_map = map(&graph.vertices_edges);
 	validate!(vertices_edges_map, graph.edges_vertices, EVVE);
-	*/
+
 	return Ok(());
 }
 

@@ -99,8 +99,8 @@ impl Fold {
 					inherited_frame.inherit_properties(frame_parent);
 					if !frame_parent.inherit { break; }
 					frame = frame_parent;
-				}
-				None => break
+				},
+				None => break,
 			}
 		}
 
@@ -123,7 +123,7 @@ impl Fold {
 			validate_frame_parents(self, frame_index)?;
 			match self.get_inherited_frame(frame_index) {
 				Ok(inherited_frame) => inherited_frame.validate()?,
-				Err(frame) => frame.validate()?
+				Err(frame) => frame.validate()?,
 			}
 		}
 		return Ok(());

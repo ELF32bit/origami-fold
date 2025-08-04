@@ -1,4 +1,4 @@
-use fold_specification::fold::Fold;
+use fold::fold::Fold;
 
 use std::{fs, path::PathBuf};
 use std::io::BufReader;

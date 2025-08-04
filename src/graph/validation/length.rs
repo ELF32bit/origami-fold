@@ -14,17 +14,17 @@ pub enum LengthError {
 }
 
 macro_rules! validate {
-	($method: ident, $source: ident, $destination: ident, $error: ident) => {
+	($method: ident, $array1: ident, $array2: ident, $error: ident) => {
 		pub fn $method(graph: &Graph) -> Result<(), LengthError> {
-			let l1 = graph.$source.len();
-			let l2 = graph.$destination.len();
+			let l1 = graph.$array1.len();
+			let l2 = graph.$array2.len();
 			if !(l1 == 0 || l1 == l2) { return Err(LengthError::$error) }
 			return Ok(());
 		}
 	};
 }
 
-validate!(validate_vertices_vertices_length,vertices_vertices, vertices_coordinates, VV);
+validate!(validate_vertices_vertices_length, vertices_vertices, vertices_coordinates, VV);
 validate!(validate_vertices_edges_length, vertices_edges, vertices_coordinates, VE);
 validate!(validate_vertices_faces_length, vertices_faces, vertices_coordinates, VF);
 

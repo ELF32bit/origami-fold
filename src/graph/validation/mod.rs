@@ -11,6 +11,7 @@ pub use reflexive::ReflexiveError;
 pub use winding::WindingError;
 
 pub use types::validate_vertices_coordinates;
+pub use types::validate_edges_vertices;
 pub use types::validate_edges_length;
 pub use types::validate_edge_orders;
 pub use types::validate_faces_vertices;

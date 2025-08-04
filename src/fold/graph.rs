@@ -2,11 +2,8 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Serialize_repr, Deserialize_repr};
 
 use crate::real::Real;
-use super::edge::Edge;
-use super::edge::EdgeAssignment;
 use super::validation::Error;
 use crate::graph::validation;
-use crate::graph::make;
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug)]
 #[serde(default)]
@@ -25,7 +22,7 @@ pub struct Graph {
 	pub vertices_faces: Vec<Vec<Option<usize>>>,
 
 	#[serde(skip_serializing_if = "Vec::is_empty")]
-	pub edges_vertices: Vec<Edge>,
+	pub edges_vertices: Vec<Vec<usize>>,
 
 	#[serde(skip_serializing_if = "Vec::is_empty")]
 	pub edges_faces: Vec<Vec<Option<usize>>>,
@@ -58,6 +55,24 @@ pub struct Graph {
 	#[serde(rename = "faceOrders")]
 	#[serde(skip_serializing_if = "Vec::is_empty")]
 	pub face_orders: Vec<(usize, usize, FaceOrder)>,
+}
+
+#[derive(Clone, Copy, Serialize, Deserialize, Debug)]
+pub enum EdgeAssignment {
+	#[serde(rename = "B")]
+	Boundary,
+	#[serde(rename = "M")]
+	Mountain,
+	#[serde(rename = "V")]
+	Valley,
+	#[serde(rename = "F")]
+	Flat,
+	#[serde(rename = "U")]
+	Unknown,
+	#[serde(rename = "C")]
+	Cut,
+	#[serde(rename = "J")]
+	Join,
 }
 
 #[derive(Clone, Copy, Serialize_repr, Deserialize_repr, Debug)]
@@ -106,6 +121,7 @@ impl Graph {
 
 	pub fn validate(&self) -> Result<(), Error> {
 		validation::validate_vertices_coordinates(self)?;
+		validation::validate_edges_vertices(self)?;
 		validation::validate_edges_length(self)?;
 		validation::validate_edge_orders(self)?;
 		validation::validate_faces_vertices(self)?;
@@ -147,13 +163,5 @@ impl Graph {
 		validation::validate_faces_edges_and_faces_faces_winding(self)?;
 
 		return Ok(());
-	}
-
-	pub fn make_vertices_edges_unsorted(&mut self) {
-		self.vertices_edges = make::make_vertices_edges_unsorted(&self.edges_vertices);
-	}
-
-	pub fn make_vertices_edges(&mut self) {
-		self.vertices_edges = make::make_vertices_edges(&self.edges_vertices, &self.vertices_vertices);
 	}
 }

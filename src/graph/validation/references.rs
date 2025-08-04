@@ -32,9 +32,9 @@ macro_rules! validate_with_null {
 	($method: ident, $source: ident, $destination: ident, $error: ident) => {
 		pub fn $method(graph: &Graph) -> Result<(), ReferencesError> {
 			let max_index = graph.$destination.len();
-			for &option in graph.$source.iter().flatten() {
-				if option.is_none() { continue; }
-				let index = option.unwrap();
+			for &index_option in graph.$source.iter().flatten() {
+				if index_option.is_none() { continue; }
+				let index = index_option.unwrap();
 				if index >= max_index {
 					return Err(ReferencesError::$error(index, max_index));
 				}

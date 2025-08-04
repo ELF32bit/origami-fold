@@ -19,7 +19,8 @@ pub fn validate_vertices_vertices_and_vertices_edges_winding(graph: &Graph) -> R
 	for (vertex_index, vertex_vertices) in graph.vertices_vertices.iter().enumerate() {
 		for (index, &vertex_vertex_index) in vertex_vertices.iter().enumerate() {
 			let vertex_edge_index = graph.vertices_edges[vertex_index][index];
-			let vertex_edge = graph.edges_vertices[vertex_edge_index];
+			let vertex_edge_vec = &graph.edges_vertices[vertex_edge_index];
+			let vertex_edge = (vertex_edge_vec[0], vertex_edge_vec[1]);
 
 			if vertex_edge == (vertex_index, vertex_vertex_index) { continue; }
 			else if vertex_edge == (vertex_vertex_index, vertex_index) { continue; }
@@ -117,7 +118,8 @@ pub fn validate_faces_vertices_and_faces_edges_winding(graph: &Graph) -> Result<
 		for (index, &face_vertex_index) in face_vertices.iter().enumerate() {
 			let face_next_vertex_index = face_vertices[(index + 1) % d];
 			let face_edge_index = graph.faces_edges[face_index][index];
-			let face_edge = graph.edges_vertices[face_edge_index];
+			let face_edge_vec = &graph.edges_vertices[face_edge_index];
+			let face_edge = (face_edge_vec[0], face_edge_vec[1]);
 
 			if face_edge == (face_vertex_index, face_next_vertex_index) { continue; }
 			else if face_edge == (face_next_vertex_index, face_vertex_index) { continue; }
@@ -170,7 +172,7 @@ pub fn validate_faces_edges_and_faces_faces_winding(graph: &Graph) -> Result<(),
 	if graph.faces_edges.len() == 0 { return Ok(()); }
 	if graph.faces_faces.len() == 0 { return Ok(()); }
 	if graph.edges_faces.len() == 0 { return Ok(()); }
-
+	//TODO
 	for (face_index, face_edges) in graph.faces_edges.iter().enumerate() {
 		let d = face_edges.len();
 		for index in 0..d {
